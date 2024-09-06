@@ -6,4 +6,12 @@ public class Comment
     public string Body { get; set; }
     public int UserId { get; set; }
     public int PostId { get; set; }
+
+    public Comment(int id, string body, int userId, int postId)
+    {
+        Id = id;
+        Body = body;
+        UserId = userId;
+        PostId = postId;
+    }
 }
