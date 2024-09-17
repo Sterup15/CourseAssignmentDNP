@@ -6,7 +6,7 @@ namespace CLI;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         Console.WriteLine("Starting CLI app...");
         IUserRepository userRepository = new UserInMemoryRepository();

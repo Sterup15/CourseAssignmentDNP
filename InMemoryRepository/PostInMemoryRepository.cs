@@ -19,6 +19,7 @@ public class PostInMemoryRepository : IPostRepository
             ? posts.Max(p => p.Id) + 1
             : 1;
         posts.Add(post);
+        Console.WriteLine($"Post {post.Id} added");
         return Task.FromResult(post);
     }
 
