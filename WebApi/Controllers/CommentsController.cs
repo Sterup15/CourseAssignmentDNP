@@ -1,44 +1,71 @@
 ﻿using ApiContracts.DTOs;
+using EntitityFilters.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class CommentsController : ControllerBase
 {
-    [HttpGet("/posts/{postId}/comments")]
-    public IActionResult GetCommentsForPost(int postId)
+    private readonly CommentService commentService;
+
+    public CommentsController(CommentService commentService)
     {
-        // Logic to retrieve comments for a specific post
-        return null;
+        this.commentService = commentService;
     }
 
-    [HttpGet("{id}")]
-    public IActionResult GetSingle(int id)
+
+    [HttpGet("{commentId:int}")]
+    public async Task<ActionResult<CommentDto>> GetSingle(int commentId)
     {
-        // Logic to retrieve a single comment
-        return null;
+        var comment = await commentService.GetSingleAsync(commentId);
+        if (comment == null)
+        {
+            return NotFound(); // Return 404 if comment not found
+        }
+        return Ok(comment); // Return the comment with HTTP 200
     }
 
-    [HttpPost("/posts/{postId}/comments")]
-    public IActionResult Create(int postId, [FromBody] CreateCommentDto dto)
+    [HttpPost("posts/{postId:int}/comments")]
+    public async Task<ActionResult<CommentDto>> Create(int postId, [FromBody] CreateCommentDto dto)
     {
-        // Logic to create a new comment for a post
-        return null;
+        var createdComment = await commentService.CreateAsync(postId, dto);
+        return CreatedAtAction(nameof(GetSingle), new { commentId = createdComment.Id }, createdComment); // Return 201
     }
 
-    [HttpPut("{id}")]
-    public IActionResult Update(int id, [FromBody] UpdateCommentDto dto)
+    [HttpPut("{commentId:int}")]
+    public async Task<IActionResult> Update(int commentId, [FromBody] UpdateCommentDto dto)
     {
-        // Logic to update a comment
-        return null;
+        var updated = await commentService.UpdateAsync(commentId, dto);
+        if (!updated)
+        {
+            return NotFound(); // Return 404 if comment not found
+        }
+        return NoContent(); // Return 204 No Content on success
     }
 
-    [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    [HttpDelete("{commentId:int}")]
+    public async Task<IActionResult> Delete(int commentId)
     {
-        // Logic to delete a comment
-        return null;
+        var deleted = await commentService.DeleteAsync(commentId);
+        if (!deleted)
+        {
+            return NotFound(); // Return 404 if comment not found
+        }
+        return NoContent(); // Return 204 No Content on success
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<CommentDto>>> GetMany([FromQuery] CommentFilter filter)
+    {
+        var commentDtos = await commentService.GetCommentsAsync(filter);
+        
+        // Return 404 if no comments are found
+        if (commentDtos == null || !commentDtos.Any())
+        {
+            return NotFound(); // HTTP 404
+        }
+        return Ok(commentDtos); // Return the list of comments with HTTP 200
     }
 }

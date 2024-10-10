@@ -70,9 +70,9 @@ public class CommentFileRepository : ICommentRepository
         return Task.FromResult(comment);
     }
 
-    public IQueryable<Comment> GetMany()
+    public async Task<IQueryable<Comment>> GetManyAsync()
     {
-        List<Comment> comments = ReadAndDeserializeAsync().Result;
+        List<Comment> comments = await ReadAndDeserializeAsync();
         return comments.AsQueryable();
     }
 

@@ -14,7 +14,8 @@ public class ListUsersView
 
     public async Task<Task<IQueryable<User>>> ListUsers()
     {
-        foreach (User user in UserRepository.GetMany())
+        IQueryable<User> users = await UserRepository.GetManyAsync();
+        foreach (User user in users)
         {
             Console.WriteLine($"{user.Id}: {user.Username}");
         }

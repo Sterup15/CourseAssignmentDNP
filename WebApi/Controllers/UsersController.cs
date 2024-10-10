@@ -1,87 +1,67 @@
 ﻿using ApiContracts.DTOs;
-using DomainEntities;
 using Microsoft.AspNetCore.Mvc;
-using Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebApi.Services;
 
-namespace WebApi.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController : ControllerBase
+namespace WebApi.Controllers
 {
-    private readonly IUserRepository userRepo;
+    [ApiController]
+    [Route("[controller]")]
+    public class UsersController : ControllerBase
+    {
+        private readonly UserService userService;
 
-    public UsersController(IUserRepository userRepo)
-    {
-        this.userRepo = userRepo;
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto request)
-    {
-        User user = new(request.Username, request.Password);
-        User created = await userRepo.AddAsync(user);
-        UserDto dto = new()
+        public UsersController(UserService userService)
         {
-            Id = created.Id,
-            UserName = created.Username
-        };
-        return Created($"api/users/{dto.Id}", dto);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<ActionResult<UserDto>> Update(int id, [FromBody] UpdateUserDto request)
-    {
-        User updatedUser = new(id, request.Username, request.Password);
-        await userRepo.UpdateAsync(updatedUser);
-        UserDto dto = new()
-        {
-            Id = updatedUser.Id,
-            UserName = updatedUser.Username
-        };
-        return Created($"api/users/{dto.Id}", dto);
-    }
-    
-    [HttpGet("{id}")]
-    public async Task<ActionResult<UserDto>> GetSingle(int id)
-    {
-        User user = await userRepo.GetSingleAsync(id);
-        UserDto dto = new()
-        {
-            Id = user.Id,
-            UserName = user.Username
-        };
-        return dto;
-    }
-    
-    [HttpGet]
-    public IEnumerable<UserDto> GetMany(string filterByString)
-    {
-        IQueryable<User> users = userRepo.GetMany();
-
-        // Apply filtering using LINQ
-        if (!string.IsNullOrEmpty(filterByString))
-        {
-            users = users.Where(u => u.Username.Contains(filterByString));
+            this.userService = userService;
         }
 
-        // Project the results to UserDto and return as a list
-        return users.Select(u => new UserDto
+        [HttpPost]
+        public async Task<ActionResult<UserDto>> Create([FromBody] CreateOrUpdateUserDto request)
         {
-            Id = u.Id,
-            UserName = u.Username
-        }).ToList(); // Use ToList() to materialize the query
+            // Delegate to service
+            UserDto dto = await userService.CreateUserAsync(request);
+            return Created($"api/users/{dto.Id}", dto);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<UserDto>> Update(int id, [FromBody] CreateOrUpdateUserDto request)
+        {
+            // Delegate to service
+            UserDto dto = await userService.UpdateUserAsync(id, request);
+            return Created($"api/users/{dto.Id}", dto);
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<UserDto>> GetSingle(int id)
+        {
+            // Delegate to service
+            UserDto dto = await userService.GetSingleUserAsync(id);
+            return Ok(dto);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetMany(string filterByString)
+        {
+            // Delegate to service
+            var userDtos = await userService.GetUsersAsync(filterByString);
+
+            // Return 404 if no users found
+            if (!userDtos.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(userDtos);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            // Delegate to service
+            await userService.DeleteUserAsync(id);
+            return NoContent();
+        }
     }
-
-
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        await userRepo.DeleteAsync(id);
-
-        // Return 204 No Content to indicate successful deletion
-        return NoContent();
-    }
-
 }

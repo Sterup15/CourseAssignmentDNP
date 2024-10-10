@@ -12,15 +12,16 @@ public class ListPostsView
         PostRepository = postRepository;
     }
 
-    public Task<IQueryable<Post>> ListPosts()
+    public async Task<IQueryable<Post>> ListPosts()
     {
-        foreach (Post post in PostRepository.GetMany())
+        IQueryable<Post> posts = await PostRepository.GetManyAsync();
+        foreach (Post post in posts)
         {
             Console.WriteLine($"{post.Title}: {post.Body}");
             Console.WriteLine($"Written by: {post.UserId}");
             Console.WriteLine();
         }
 
-        return Task.FromResult<IQueryable<Post>>(null!);
+        return await Task.FromResult<IQueryable<Post>>(null!);
     }
 }

@@ -14,4 +14,11 @@ public class Comment
         UserId = userId;
         PostId = postId;
     }
+
+    public Comment(string body, int userId, int postId)
+    {
+        Body = body;
+        UserId = userId;
+        PostId = postId;
+    }
 }
