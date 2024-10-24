@@ -30,7 +30,7 @@ namespace WebApi.Controllers
         {
             // Delegate to service
             UserDto dto = await userService.UpdateUserAsync(id, request);
-            return Created($"api/users/{dto.Id}", dto);
+            return Ok(dto);
         }
 
         [HttpGet("{id:int}")]

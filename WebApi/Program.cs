@@ -10,8 +10,9 @@ builder.Services.AddScoped<IUserRepository, UserFileRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentFileRepository>();
 
 builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<CommentService>();
+builder.Services.AddScoped<PostService>();
+
 
 
 builder.Services.AddControllers();

@@ -9,11 +9,13 @@ public class PostService
 {
     private readonly IPostRepository postRepo;
     private readonly IUserRepository userRepo;
-
-    public PostService(IPostRepository postRepo, IUserRepository userRepo)
+    private readonly CommentService commentService;
+    
+    public PostService(IPostRepository postRepo, IUserRepository userRepo, CommentService commentService)
     {
         this.postRepo = postRepo;
         this.userRepo = userRepo;
+        this.commentService = commentService;
     }
 
     // Method to retrieve all posts or filter them
@@ -142,8 +144,8 @@ public class PostService
         return true; // Return true if deletion was successful
     }
 
-    public async Task<object?> GetCommentsForPostAsync(int postId)
+    public async Task<IEnumerable<CommentDto>> GetCommentsForPostAsync(int postId)
     {
-        throw new NotImplementedException();
+        return await commentService.GetCommentsAsync(new CommentFilter { PostId = postId });
     }
 }

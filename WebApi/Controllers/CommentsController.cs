@@ -35,14 +35,14 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPut("{commentId:int}")]
-    public async Task<IActionResult> Update(int commentId, [FromBody] UpdateCommentDto dto)
+    public async Task<ActionResult<CommentDto>> Update(int commentId, [FromBody] UpdateCommentDto dto)
     {
-        var updated = await commentService.UpdateAsync(commentId, dto);
-        if (!updated)
+        var updatedComment = await commentService.UpdateAsync(commentId, dto);
+        if (updatedComment == null)
         {
             return NotFound(); // Return 404 if comment not found
         }
-        return NoContent(); // Return 204 No Content on success
+        return Ok(updatedComment); 
     }
 
     [HttpDelete("{commentId:int}")]

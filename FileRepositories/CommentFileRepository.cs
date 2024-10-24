@@ -26,7 +26,7 @@ public class CommentFileRepository : ICommentRepository
         return comment;
     }
 
-    public Task UpdateAsync(Comment comment)
+    public async Task<Comment> UpdateAsync(Comment comment)
     {
         List<Comment> comments = ReadAndDeserializeAsync().Result;
         Comment? existingComment = comments.SingleOrDefault(p => p.Id == comment.Id);
@@ -39,7 +39,7 @@ public class CommentFileRepository : ICommentRepository
         comments.Remove(existingComment);
         comments.Add(comment);
         WriteAndSerializeAsync(comments).Wait();
-        return Task.CompletedTask;
+        return comment;
     }
 
     public Task DeleteAsync(int id)

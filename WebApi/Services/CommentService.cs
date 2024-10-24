@@ -69,17 +69,37 @@ public class CommentService
             };
         }
 
-        public async Task<bool> UpdateAsync(int commentId, UpdateCommentDto dto)
+        public async Task<CommentDto> UpdateAsync(int commentId, UpdateCommentDto dto)
         {
             var existingComment = await commentRepo.GetSingleAsync(commentId);
             if (existingComment == null)
             {
-                return false; // Comment not found
+                throw new Exception("Comment doesn't exist"); // Comment not found
             }
 
             existingComment.Body = dto.Body;
-            await commentRepo.UpdateAsync(existingComment); // Update comment
-            return true; // Success
+            Comment updatedComment = await commentRepo.UpdateAsync(existingComment); // Update comment
+            return new CommentDto
+            {
+                Id = updatedComment.Id,
+                Body = updatedComment.Body,
+                Author = new UserDto
+                {
+                    Id = updatedComment.UserId,
+                    UserName = (await userRepo.GetSingleAsync(updatedComment.UserId)).Username
+                },
+                Post = new PostDto
+                {
+                    Id = updatedComment.PostId,
+                    Title = (await postRepo.GetSingleAsync(updatedComment.PostId)).Title,
+                    Body = (await postRepo.GetSingleAsync(updatedComment.PostId)).Body,
+                    Author = new UserDto
+                    {
+                        Id = (await postRepo.GetSingleAsync(updatedComment.PostId)).UserId,
+                        UserName = (await userRepo.GetSingleAsync(updatedComment.PostId)).Username
+                    }
+                }
+            };
         }
 
         public async Task<bool> DeleteAsync(int commentId)

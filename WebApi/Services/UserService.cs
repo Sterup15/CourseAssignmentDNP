@@ -73,7 +73,6 @@ public class UserService
 
     public async Task DeleteUserAsync(int id)
     {
-        // Business logic for deleting a user
         await userRepo.DeleteAsync(id);
     }
 }
