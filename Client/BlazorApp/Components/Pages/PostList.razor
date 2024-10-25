@@ -1,0 +1,75 @@
+﻿@page "/PostList"
+@inject IPostService PostService
+@using ApiContracts.DTOs
+@using BlazorApp.Services.PostService
+@using EntitityFilters.Filters
+
+<h3>PostList</h3>
+
+<!-- Optional filter area if you want to add filtering functionality -->
+<input @bind="TitleFilter" placeholder="Filter by title" />
+<input @bind="UserNameFilter" placeholder="Filter by username"/>
+<button @onclick="ApplyFilters">Apply Filters</button>
+
+@if (IsLoading)
+{
+<p>Loading posts...</p>
+}
+else if (Posts == null || !Posts.Any())
+{
+<p>No posts available.</p>
+}
+else
+{
+<ul>
+    @foreach (var post in Posts)
+    {
+    <li>
+        <a href="post-details/@post.Id">@post.Title</a> by @post.Author.UserName
+    </li>
+    }
+</ul>
+}
+
+@code {
+    private IEnumerable<PostDto> Posts { get; set; }
+    private bool IsLoading = true;
+    private String TitleFilter { get; set; } = string.Empty;
+    private String UserNameFilter { get; set; } = string.Empty;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPostsAsync();
+    }
+
+    private async Task LoadPostsAsync()
+    {
+        IsLoading = true;
+        var filter = new PostFilter
+        {
+            TitleContains = string.IsNullOrWhiteSpace(TitleFilter) ? null : TitleFilter,
+            UserName = string.IsNullOrWhiteSpace(UserNameFilter) ? null : UserNameFilter
+        };
+        try
+        {
+            // Load posts using the filter
+            Posts = await PostService.GetPostsAsync(filter);
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception gracefully, maybe log it or show a message
+            Console.WriteLine($"Error loading posts: {ex.Message}");
+            Posts = new List<PostDto>(); // Optionally, set to an empty list
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ApplyFilters()
+    {
+        await LoadPostsAsync();
+    }
+
+}

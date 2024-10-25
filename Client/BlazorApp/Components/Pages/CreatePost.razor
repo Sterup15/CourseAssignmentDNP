@@ -1,0 +1,38 @@
+﻿@page "/CreatePost"
+@inject IPostService PostService
+@using ApiContracts.DTOs
+@using BlazorApp.Services.PostService
+<h3>CreatePost</h3>
+
+<input @bind="newPost.Title" placeholder="Enter title" />
+<textarea @bind="newPost.Body" placeholder="Enter body"></textarea>
+<button @onclick="AddPost">Create Post</button>
+
+@code {
+
+    private CreateOrUpdatePostDto newPost { get; set; } = new CreateOrUpdatePostDto
+    {
+        Title = null,
+        Body = null,
+        UserId = 1
+    };
+
+    private int userId = 1;
+
+    private async Task AddPost()
+    {
+        if (newPost.Title == null || newPost.Body == null)
+        {
+            throw new Exception("Post must contain Title and Body");
+        }
+        
+        newPost.UserId = userId;
+        await PostService.CreatePostAsync(newPost);
+        newPost = new CreateOrUpdatePostDto
+        {
+            Body = null,
+            Title = null,
+            UserId = userId
+        };
+    }
+}

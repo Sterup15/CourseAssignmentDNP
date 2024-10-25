@@ -21,4 +21,9 @@ public class Comment
         UserId = userId;
         PostId = postId;
     }
+
+    public Comment()
+    {
+        
+    }
 }

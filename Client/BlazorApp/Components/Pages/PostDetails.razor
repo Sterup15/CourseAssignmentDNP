@@ -1,0 +1,72 @@
+﻿@page "/post-details/{PostId:int}"
+@using ApiContracts.DTOs
+@using BlazorApp.Services.CommentService
+@using BlazorApp.Services.PostService
+@using BlazorApp.Services.UserService
+@inject IPostService PostService
+@inject ICommentService CommentService
+@inject IUserService UserService
+
+<h3>@Post?.Title</h3>
+<p>@Post?.Body</p>
+<p>Author: @Post?.Author.UserName</p>
+
+<h4>Comments</h4>
+@if (Comments != null && Comments.Any())
+{
+<ul>
+    @foreach (var comment in Comments)
+    {
+    <li>@comment.Author.UserName: @comment.Body</li> <!-- Make sure Author is not null -->
+    }
+</ul>
+}
+else
+{
+<p>No comments available.</p>
+}
+
+<h4>Add a Comment</h4>
+<input @bind="NewCommentContent" placeholder="Add a comment" />
+<button @onclick="AddComment">Add Comment</button>
+
+
+@code {
+    [Parameter]
+    public int PostId { get; set; }
+
+    private PostDto Post;
+    private List<CommentDto> Comments { get; set; } = new();
+    private String NewCommentContent;
+    private int UserId = 1;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        // Load the post
+        Post = await PostService.GetPostByIdAsync(PostId);
+
+        // Load the comments for the post
+        if (Post != null)
+        {
+            Comments = (await PostService.GetCommentsForPostAsync(PostId)).ToList(); // Await the async call
+        }
+    }
+
+    private async Task AddComment()
+    {
+        if (!string.IsNullOrWhiteSpace(NewCommentContent))
+        {
+            var comment = new CreateCommentDto
+            {
+                UserId = UserId,
+                Body = NewCommentContent
+            };
+            var addedComment = await CommentService.CreateAsync(PostId, comment);
+            Comments.Add(addedComment);
+            NewCommentContent = string.Empty;
+
+        }
+    }
+
+
+}

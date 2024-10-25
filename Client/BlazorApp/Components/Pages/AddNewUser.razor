@@ -1,0 +1,36 @@
+﻿@page "/AddNewUser"
+@inject IUserService UserService
+@using ApiContracts.DTOs
+@using BlazorApp.Services.UserService
+<h3>AddNewUser</h3>
+
+<input @bind="newUser.Username" placeholder="Enter user name"/>
+<input @bind="newUser.Password" placeholder="Enter password"/>
+
+<button @onclick="AddUser">Add User</button>
+
+@code {
+
+    private CreateOrUpdateUserDto newUser { get; set; } = new()
+    {
+        Username = null,
+        Password = null
+    };
+    
+
+    private async Task AddUser()
+    {
+        if (string.IsNullOrWhiteSpace(newUser.Username) || string.IsNullOrWhiteSpace(newUser.Password))
+        {
+            throw new Exception("User must contain a username and password.");
+        }
+        
+        await UserService.CreateUserAsync(newUser);
+        newUser = new CreateOrUpdateUserDto
+        {
+            Username = null,
+            Password = null
+        };
+    }
+
+}
