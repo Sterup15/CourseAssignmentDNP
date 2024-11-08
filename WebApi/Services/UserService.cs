@@ -75,4 +75,20 @@ public class UserService
     {
         await userRepo.DeleteAsync(id);
     }
+
+    public async Task<CreateOrUpdateUserDto> GetSingleUserByUsernameAsync(string username)
+    {
+        User user = await userRepo.GetSingleByUsernameAsync(username);
+        
+        return new CreateOrUpdateUserDto()
+        {
+            Username = user.Username,
+            Password = user.Password
+        };
+    }
+
+    public async Task<int> GetIdByUsernameAsync(string username)
+    {
+        return (int)await userRepo.GetIdByUsernameAsync(username);
+    }
 }

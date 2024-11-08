@@ -87,7 +87,13 @@ public class UserFileRepository : IUserRepository
         List<User> users = await ReadAndDeserializeAsync();
         return users.AsQueryable();
     }
-    
+
+    public async Task<User> GetSingleByUsernameAsync(string username)
+    {
+        int userId = (int)await GetIdByUsernameAsync(username);
+        return await GetSingleAsync(userId);
+    }
+
     private async Task<List<User>> ReadAndDeserializeAsync()
     {
         string usersAsJson = await File.ReadAllTextAsync(filePath);

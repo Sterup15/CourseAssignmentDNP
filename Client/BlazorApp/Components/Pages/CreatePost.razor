@@ -1,23 +1,45 @@
 ﻿@page "/CreatePost"
+@attribute [Authorize]
 @inject IPostService PostService
+@using System.Security.Claims
 @using ApiContracts.DTOs
 @using BlazorApp.Services.PostService
 <h3>CreatePost</h3>
-
-<input @bind="newPost.Title" placeholder="Enter title" />
-<textarea @bind="newPost.Body" placeholder="Enter body"></textarea>
-<button @onclick="AddPost">Create Post</button>
+<AuthorizeView>
+    <Authorized>
+        <p>Hello @userName, want to create a new post?</p>
+        <input @bind="newPost.Title" placeholder="Enter title"/>
+        <textarea @bind="newPost.Body" placeholder="Enter body"></textarea>
+        <button @onclick="AddPost">Create Post</button>
+    </Authorized>
+</AuthorizeView>
 
 @code {
-
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private static int userId;
+    private static string userName;
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authenticationState = await State;
+        ClaimsPrincipal claimsPrincipal = authenticationState.User;
+        if(claimsPrincipal.Identity is null || !claimsPrincipal.Identity.IsAuthenticated)
+        {
+            // the user is not logged in
+            return;
+        }
+        string? userName = claimsPrincipal.Identity?.Name;
+        IEnumerable<Claim> claims = claimsPrincipal.Claims;
+        string userIdAsString = claims.Single(c => c.Type == "Id").Value;
+        userId = int.Parse(userIdAsString);
+    }
+    
     private CreateOrUpdatePostDto newPost { get; set; } = new CreateOrUpdatePostDto
     {
         Title = null,
         Body = null,
-        UserId = 1
+        UserId = userId
     };
-
-    private int userId = 1;
+    
 
     private async Task AddPost()
     {

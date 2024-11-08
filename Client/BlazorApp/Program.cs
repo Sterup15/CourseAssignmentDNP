@@ -1,7 +1,9 @@
 using BlazorApp.Components;
+using BlazorApp.Components.Auth;
 using BlazorApp.Services.CommentService;
 using BlazorApp.Services.PostService;
 using BlazorApp.Services.UserService;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BlazorApp;
 
@@ -22,6 +24,7 @@ public class Program
         builder.Services.AddScoped<IUserService, HttpUserService>();
         builder.Services.AddScoped<IPostService, HttpPostService>();
         builder.Services.AddScoped<ICommentService, HttpCommentService>();
+        builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthProvider>();
 
         
 

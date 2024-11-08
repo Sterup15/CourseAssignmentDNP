@@ -46,6 +46,8 @@ public class CommentService
         {
             var comment = new Comment(dto.Body, dto.UserId, postId);
             var createdComment = await commentRepo.AddAsync(comment); // Save comment
+            var post = await postRepo.GetSingleAsync(createdComment.PostId); // Get post details once
+            var postAuthor = await userRepo.GetSingleAsync(post.UserId); // Use post's UserId to get the author
             return new CommentDto
             {
                 Id = createdComment.Id,
@@ -57,13 +59,13 @@ public class CommentService
                 },
                 Post = new PostDto
                 {
-                    Id = createdComment.PostId,
-                    Title = (await postRepo.GetSingleAsync(createdComment.PostId)).Title,
-                    Body = (await postRepo.GetSingleAsync(createdComment.PostId)).Body,
+                    Id = post.Id,
+                    Title = post.Title,
+                    Body = post.Body,
                     Author = new UserDto
                     {
-                        Id = (await postRepo.GetSingleAsync(createdComment.PostId)).UserId,
-                        UserName = (await userRepo.GetSingleAsync(createdComment.PostId)).Username
+                        Id = post.UserId,
+                        UserName = postAuthor.Username // Now correctly referencing the post author
                     }
                 }
             };

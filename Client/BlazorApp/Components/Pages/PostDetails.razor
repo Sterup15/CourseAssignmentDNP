@@ -1,4 +1,6 @@
 ﻿@page "/post-details/{PostId:int}"
+@attribute [Authorize]
+@using System.Security.Claims
 @using ApiContracts.DTOs
 @using BlazorApp.Services.CommentService
 @using BlazorApp.Services.PostService
@@ -6,30 +8,32 @@
 @inject IPostService PostService
 @inject ICommentService CommentService
 @inject IUserService UserService
+        <h3>@Post?.Title</h3>
+        <p>@Post?.Body</p>
+        <p>Author: @Post?.Author.UserName</p>
 
-<h3>@Post?.Title</h3>
-<p>@Post?.Body</p>
-<p>Author: @Post?.Author.UserName</p>
-
-<h4>Comments</h4>
-@if (Comments != null && Comments.Any())
-{
-<ul>
-    @foreach (var comment in Comments)
-    {
-    <li>@comment.Author.UserName: @comment.Body</li> <!-- Make sure Author is not null -->
-    }
-</ul>
-}
-else
-{
-<p>No comments available.</p>
-}
-
-<h4>Add a Comment</h4>
-<input @bind="NewCommentContent" placeholder="Add a comment" />
-<button @onclick="AddComment">Add Comment</button>
-
+        <h4>Comments</h4>
+        @if (Comments != null && Comments.Any())
+        {
+            <ul>
+                @foreach (var comment in Comments)
+                {
+                    <li>@comment.Author.UserName: @comment.Body</li>
+                    <!-- Make sure Author is not null -->
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No comments available.</p>
+        }
+<AuthorizeView>
+    <Authorized>
+        <h4>Add a Comment</h4>
+        <input @bind="NewCommentContent" placeholder="Add a comment"/>
+        <button @onclick="AddComment">Add Comment</button>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     [Parameter]
@@ -38,7 +42,24 @@ else
     private PostDto Post;
     private List<CommentDto> Comments { get; set; } = new();
     private String NewCommentContent;
-    private int UserId = 1;
+    
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private static int userId;
+    private static string userName;
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authenticationState = await State;
+        ClaimsPrincipal claimsPrincipal = authenticationState.User;
+        if(claimsPrincipal.Identity is null || !claimsPrincipal.Identity.IsAuthenticated)
+        {
+            // the user is not logged in
+            return;
+        }
+        string? userName = claimsPrincipal.Identity?.Name;
+        IEnumerable<Claim> claims = claimsPrincipal.Claims;
+        string userIdAsString = claims.Single(c => c.Type == "Id").Value;
+        userId = int.Parse(userIdAsString);
+    }
     
     protected override async Task OnParametersSetAsync()
     {
@@ -58,7 +79,7 @@ else
         {
             var comment = new CreateCommentDto
             {
-                UserId = UserId,
+                UserId = userId,
                 Body = NewCommentContent
             };
             var addedComment = await CommentService.CreateAsync(PostId, comment);
