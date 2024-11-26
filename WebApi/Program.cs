@@ -1,3 +1,5 @@
+using EfcRepositories;
+using EfcRepositories.Repositories;
 using FileRepositories;
 using Repositories;
 using WebApi.Services;
@@ -5,9 +7,10 @@ using WebApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddScoped<IPostRepository, PostFileRepository>();
-builder.Services.AddScoped<IUserRepository, UserFileRepository>();
-builder.Services.AddScoped<ICommentRepository, CommentFileRepository>();
+builder.Services.AddScoped<IPostRepository, EfcPostRepository>();
+builder.Services.AddScoped<IUserRepository, EfcUserRepository>();
+builder.Services.AddScoped<ICommentRepository, EfcCommentRepository>();
+builder.Services.AddDbContext<DatabaseContext>();
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CommentService>();
